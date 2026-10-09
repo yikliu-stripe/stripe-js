@@ -59,6 +59,8 @@ import {
   StripeIssuingAddToWalletButtonElementOptions,
   StripeIssuingAddToWalletButtonElement,
   ReleaseTrain,
+  StripeCheckoutUpdateIndividualNameResult,
+  StripeCheckoutUpdateBusinessNameResult,
 } from '../../../types';
 
 const stripePromise: Promise<Stripe | null> = loadStripe('');
@@ -3862,10 +3864,51 @@ checkoutElementsSdk.loadActions().then((loadActionsResult) => {
         const {error} = result;
       }
     });
+
+    // Name update methods
+    actions.updateIndividualName('Jane Doe').then((result) => {
+      const nameResult: StripeCheckoutUpdateIndividualNameResult = result;
+      if (result.type === 'success') {
+        const {session} = result;
+      }
+    });
+    actions.updateIndividualName(null);
+    actions.updateBusinessName('Acme Inc').then((result) => {
+      const nameResult: StripeCheckoutUpdateBusinessNameResult = result;
+      if (result.type === 'success') {
+        const {session} = result;
+      }
+    });
+    actions.updateBusinessName(null);
+
+    // nameCollection on session
+    const session2 = actions.getSession();
+    if (session2.nameCollection) {
+      const individualName: string | null =
+        session2.nameCollection.individualName;
+      const bizName: string | null = session2.nameCollection.businessName;
+    }
+
+    // Apply promotion code error narrowing including promotionCodeAmountInsufficient
+    actions.applyPromotionCode('code').then((promoResult) => {
+      if (promoResult.type === 'error') {
+        const {error} = promoResult;
+        if (error.code === 'invalidCode') {
+          const msg: string = error.message;
+        } else if (error.code === 'promotionCodeAmountInsufficient') {
+          const msg: string = error.message;
+        } else {
+          const msg: string = error.message;
+        }
+      }
+    });
   } else {
     const {error} = loadActionsResult;
   }
 });
+
+// Contact Details getter on Elements SDK
+const contactDetailsEl: StripeContactDetailsElement | null = checkoutElementsSdk.getContactDetailsElement();
 
 // savedPaymentMethod variations for initCheckoutElementsSdk:
 stripe.initCheckoutElementsSdk({
